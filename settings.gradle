@@ -1,0 +1,4 @@
+include ':admob-advanced-native-recyvlerview'
+include ':nativetemplates'
+include ':app'
+rootProject.name = "Junior Test Task"
