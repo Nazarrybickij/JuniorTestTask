@@ -16,15 +16,13 @@ class MainViewModel : ViewModel() {
     private val networkRepository = NetworkRepository(ApiHelper(NetworkService.instance!!.apiService))
 
     @InternalCoroutinesApi
-    fun getUsers() = liveData {
+    fun getUsers() = liveData(viewModelScope.coroutineContext + Dispatchers.IO) {
         emit(Resource.loading())
-        viewModelScope.launch(Dispatchers.IO){
             try {
                 emit(Resource.success(networkRepository.getCars()))
             } catch (e: Exception) {
                 emit(Resource.failed(e.message.toString()))
                 Log.e("ERROR:", e.message.toString())
             }
-        }
     }
 }
