@@ -1,6 +1,8 @@
 package com.nazarrybickij.juniortesttask.activity
 
 
+import android.content.Context
+import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
@@ -9,7 +11,6 @@ import android.widget.LinearLayout
 import android.widget.MediaController
 import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import com.bumptech.glide.Glide
 import com.nazarrybickij.juniortesttask.databinding.ActivityDetailsBinding
 import com.nazarrybickij.juniortesttask.entity.Car
@@ -24,12 +25,11 @@ class DetailsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDetailsBinding.inflate(layoutInflater)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         setContentView(binding.root)
         title = "Details"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        car = intent.getParcelableExtra<Car>("car") as Car
+        car = intent.getParcelableExtra<Car>(EXTRA_CAR) as Car
         simpleVideoView = binding.videoView
 
         mediaControls = MediaController(this)
@@ -49,8 +49,8 @@ class DetailsActivity : AppCompatActivity() {
 
     private fun setData() {
         Glide.with(this).load(car.image).into(binding.image)
-        binding.nameTxt.text = "${car.car_make} ${car.car_model}"
-        binding.yearTxt.text = car.car_model_year.toString()
+        binding.nameTxt.text = "${car.carMake} ${car.carModel}"
+        binding.yearTxt.text = car.carModelYear.toString()
         binding.descriptionTxt.text = car.description
         setVideo()
     }
@@ -77,6 +77,17 @@ class DetailsActivity : AppCompatActivity() {
         }
         simpleVideoView.setOnPreparedListener { mp -> mp.isLooping = true }
         simpleVideoView.start()
+    }
+    companion object {
+        const val EXTRA_CAR = "EXTRA_CAR"
+
+        @JvmStatic
+        fun startActivity(context: Context, car: Car) {
+            val intent = Intent(context, DetailsActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            intent.putExtra(EXTRA_CAR, car)
+            context.startActivity(intent)
+        }
     }
 }
 

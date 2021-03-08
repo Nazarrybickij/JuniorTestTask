@@ -7,45 +7,47 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdView
-import com.nazarrybickij.juniortesttask.entity.Car
 import com.nazarrybickij.juniortesttask.R
+import com.nazarrybickij.juniortesttask.entity.Car
 
 
-class Adapter(cars: ArrayList<Car>, var callback: ClickListener) :
-    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    private var sectionedCars: List<RecyclerItem>
-    private val ITEM_TYPE = 0
-    private val TITLE_TYPE = 1
-    private val AD_TYPE = 3
-//    val spaceBetweenAds = 6
+class Adapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    private var sectionedCars: List<RecyclerItem> = mutableListOf()
+    lateinit var clickListener: (car: Car) -> Unit
+
+    //    val spaceBetweenAds = 6
     var adList = mutableListOf<NativeAd>()
-    set(value) {
-        notifyDataSetChanged()
-        field = value
-    }
-
-    init {
-        val sectionedCars: List<RecyclerItem> = cars
-            .groupBy { it.car_make }
-            .flatMap { (category, car) ->
-                listOf<RecyclerItem>(RecyclerItem.Section(category)) +
-                        car.map { RecyclerItem.Value(it) } + RecyclerItem.AD
+        set(value) {
+            field = value
+            sectionedCars.forEachIndexed { index, recyclerItem ->
+                if (recyclerItem is RecyclerItem.AD){
+                    notifyItemChanged(index)
+                }
             }
-        this.sectionedCars = sectionedCars
-    }
+        }
 
-    interface ClickListener {
-        fun itemClick(it: Car)
+    fun setList(cars: List<Car>) {
+        sectionedCars = createSectionedList(cars)
+        notifyDataSetChanged()
     }
 
     sealed class RecyclerItem {
         data class Value(val car: Car) : RecyclerItem()
         data class Section(val title: String) : RecyclerItem()
         object AD : RecyclerItem()
+    }
+    private fun createSectionedList(cars: List<Car>): List<RecyclerItem> {
+        return cars
+            .groupBy { it.carMake }
+            .flatMap { (category, car) ->
+                listOf<RecyclerItem>(RecyclerItem.Section(category)) +
+                        car.map { RecyclerItem.Value(it) } + RecyclerItem.AD
+            }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -98,8 +100,8 @@ class Adapter(cars: ArrayList<Car>, var callback: ClickListener) :
         fun onBind(position: Int) {
             val value = sectionedCars[position] as RecyclerItem.Value
             val car = value.car
-            nameTxt.text = "${car.car_make} ${car.car_model}"
-            yearTxt.text = car.car_model_year.toString()
+            nameTxt.text = "${car.carMake} ${car.carModel}"
+            yearTxt.text = car.carModelYear.toString()
             Glide.with(itemView.context).load(car.image).into(image)
         }
 
@@ -107,7 +109,7 @@ class Adapter(cars: ArrayList<Car>, var callback: ClickListener) :
             when (v) {
                 root -> {
                     val car = sectionedCars[layoutPosition] as RecyclerItem.Value
-                    callback.itemClick(car.car)
+                    clickListener(car.car)
                 }
             }
         }
@@ -140,4 +142,9 @@ class Adapter(cars: ArrayList<Car>, var callback: ClickListener) :
         }
     }
 
+    companion object {
+        val ITEM_TYPE = 0
+        val TITLE_TYPE = 1
+        val AD_TYPE = 3
+    }
 }

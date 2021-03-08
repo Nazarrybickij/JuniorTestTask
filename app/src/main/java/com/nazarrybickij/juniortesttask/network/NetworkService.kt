@@ -4,13 +4,13 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 
-class NetworkService private constructor() {
-    private val mRetrofit: Retrofit = Retrofit.Builder()
+class NetworkService{
+    private val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
     val apiService: ApiService
-        get() = mRetrofit.create(ApiService::class.java)
+        get() = retrofit.create(ApiService::class.java)
 
     companion object {
 
